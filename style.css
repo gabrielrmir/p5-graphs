@@ -1,0 +1,19 @@
+body {
+    margin: 0;
+}
+
+.container {
+    margin-top: 32px;
+    display: flex;
+    justify-content: center;
+}
+
+#inputs {
+    display: flex;
+    flex-direction: column;
+    margin-left: 16px;
+}
+
+main {
+    border: 1px dashed black;
+}
