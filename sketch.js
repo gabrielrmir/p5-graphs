@@ -85,7 +85,7 @@ function updateGraph() {
     if (!line) continue;
     const [name, p] = line.split(",").map((s) => s.trim());
     const priority = parseInt(p);
-    if (isNaN(priority) || priority < 1 || priority > 5) {
+    if (isNaN(priority) || priority < 1 || priority > 4) {
       continue;
     }
     const data = {
@@ -98,11 +98,22 @@ function updateGraph() {
         data.conn.push(node);
       }
     }
-    const newNode = new Node(
-      random(nodeRadius, 400 - nodeRadius),
-      random(nodeRadius, 400 - nodeRadius),
-      data,
-    );
+    let x, y;
+    if (data.priority == 1 || data.priority == 2) {
+      x = random(nodeRadius, width / 2 - nodeRadius);
+    } else if (data.priority == 3 || data.priority == 4) {
+      x = random(width / 2 + nodeRadius, width - nodeRadius);
+    } else {
+      x = random(nodeRadius, width - nodeRadius);
+    }
+    y = random(nodeRadius, height - nodeRadius);
+    const newNode = new Node(x, y, data);
     nodes.push(newNode);
+    // const newNode = new Node(
+    //   random(nodeRadius, 400 - nodeRadius),
+    //   random(nodeRadius, 400 - nodeRadius),
+    //   data,
+    // );
+    // nodes.push(newNode);
   }
 }
