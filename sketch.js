@@ -3,24 +3,29 @@ let nameInput;
 let nameButton;
 let picked;
 let nodes = [];
+
 class Node {
   constructor(x, y, data) {
     this.pos = createVector(x, y);
     this.data = data;
   }
+
   isHover() {
     return dist(this.pos.x, this.pos.y, mouseX, mouseY) <= nodeRadius;
   }
+
   drawBefore() {
     for (let c of this.data.conn) {
       line(this.pos.x, this.pos.y, c.pos.x, c.pos.y);
     }
   }
+
   draw() {
     circle(this.pos.x, this.pos.y, nodeRadius * 2);
     textAlign(CENTER, CENTER);
     text(this.data.priority, this.pos.x, this.pos.y);
   }
+
   drawAfter() {
     if (!this.isHover()) return;
     textBox(this.data.name, mouseX, mouseY);
@@ -99,21 +104,13 @@ function updateGraph() {
       }
     }
     let x, y;
-    if (data.priority == 1 || data.priority == 2) {
-      x = random(nodeRadius, width / 2 - nodeRadius);
-    } else if (data.priority == 3 || data.priority == 4) {
+    if (data.priority < 3) {
       x = random(width / 2 + nodeRadius, width - nodeRadius);
     } else {
-      x = random(nodeRadius, width - nodeRadius);
+      x = random(nodeRadius, width / 2 - nodeRadius);
     }
     y = random(nodeRadius, height - nodeRadius);
     const newNode = new Node(x, y, data);
     nodes.push(newNode);
-    // const newNode = new Node(
-    //   random(nodeRadius, 400 - nodeRadius),
-    //   random(nodeRadius, 400 - nodeRadius),
-    //   data,
-    // );
-    // nodes.push(newNode);
   }
 }
