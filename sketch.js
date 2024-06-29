@@ -89,15 +89,14 @@ function updateGraph() {
       continue;
     }
     const data = {
-      priority: !isNaN(priority) ? priority : 1,
+      priority: priority,
       name,
       conn: [],
     };
     for (let node of nodes) {
-      if (!data.priority) break;
-      if (!node.data.priority) continue;
-      if (abs(data.priority - node.data.priority) > 3) continue;
-      data.conn.push(node);
+      if (data.priority === node.data.priority) {
+        data.conn.push(node);
+      }
     }
     const newNode = new Node(
       random(nodeRadius, 400 - nodeRadius),
