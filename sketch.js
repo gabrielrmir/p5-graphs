@@ -85,6 +85,10 @@ function updateGraph() {
     if (!line) continue;
     const [name, p] = line.split(",").map((s) => s.trim());
     const priority = parseInt(p);
+    if (isNaN(priority) || priority < 1 || priority > 5) {
+      // Handle invalid priority (e.g., set to default value or skip)
+      continue; // Skip this node
+    }
     const data = {
       priority: !isNaN(priority) ? priority : 1,
       name,
