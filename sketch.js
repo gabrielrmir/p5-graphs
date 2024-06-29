@@ -28,7 +28,7 @@ class Node {
 }
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(500, 500);
 
   const inputsDiv = select("#inputs");
 
@@ -86,8 +86,7 @@ function updateGraph() {
     const [name, p] = line.split(",").map((s) => s.trim());
     const priority = parseInt(p);
     if (isNaN(priority) || priority < 1 || priority > 5) {
-      // Handle invalid priority (e.g., set to default value or skip)
-      continue; // Skip this node
+      continue;
     }
     const data = {
       priority: !isNaN(priority) ? priority : 1,
