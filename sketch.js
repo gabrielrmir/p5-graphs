@@ -96,7 +96,7 @@ function updateGraph() {
     for (let node of nodes) {
       if (!data.priority) break;
       if (!node.data.priority) continue;
-      if (abs(data.priority - node.data.priority) > 2) continue;
+      if (abs(data.priority - node.data.priority) > 3) continue;
       data.conn.push(node);
     }
     const newNode = new Node(
