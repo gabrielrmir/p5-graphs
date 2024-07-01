@@ -3,24 +3,29 @@ let nameInput;
 let nameButton;
 let picked;
 let nodes = [];
+
 class Node {
   constructor(x, y, data) {
     this.pos = createVector(x, y);
     this.data = data;
   }
+
   isHover() {
     return dist(this.pos.x, this.pos.y, mouseX, mouseY) <= nodeRadius;
   }
+
   drawBefore() {
     for (let c of this.data.conn) {
       line(this.pos.x, this.pos.y, c.pos.x, c.pos.y);
     }
   }
+
   draw() {
     circle(this.pos.x, this.pos.y, nodeRadius * 2);
     textAlign(CENTER, CENTER);
     text(this.data.priority, this.pos.x, this.pos.y);
   }
+
   drawAfter() {
     if (!this.isHover()) return;
     textBox(this.data.name, mouseX, mouseY);
@@ -28,7 +33,7 @@ class Node {
 }
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(500, 500);
 
   const inputsDiv = select("#inputs");
 
@@ -85,23 +90,27 @@ function updateGraph() {
     if (!line) continue;
     const [name, p] = line.split(",").map((s) => s.trim());
     const priority = parseInt(p);
+    if (isNaN(priority) || priority < 1 || priority > 4) {
+      continue;
+    }
     const data = {
-      priority: !isNaN(priority) ? priority : 1,
+      priority: priority,
       name,
       conn: [],
     };
     for (let node of nodes) {
-      if (!data.priority) break;
-      if (!node.data.priority) continue;
-      if (abs(data.priority - node.data.priority) > 2) continue;
-      data.conn.push(node);
+      if (data.priority === node.data.priority) {
+        data.conn.push(node);
+      }
     }
-    const newNode = new Node(
-      random(nodeRadius, 400 - nodeRadius),
-      random(nodeRadius, 400 - nodeRadius),
-      data,
-    );
+    let x, y;
+    if (data.priority < 3) {
+      x = random(width / 2 + nodeRadius, width - nodeRadius);
+    } else {
+      x = random(nodeRadius, width / 2 - nodeRadius);
+    }
+    y = random(nodeRadius, height - nodeRadius);
+    const newNode = new Node(x, y, data);
     nodes.push(newNode);
   }
 }
-
