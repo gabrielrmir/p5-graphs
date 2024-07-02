@@ -2,14 +2,11 @@
 const nodeRadius = 16;
 // Define o raio dos subnós
 const subNodeRadius = 8;
-// Variável para armazenar o input de nome
-let nameInput;
-// Variável para armazenar o botão de geração do mapa
-let nameButton;
 // Variável para armazenar o nó selecionado pelo usuário
 let picked;
 // Array para armazenar todos os nós criados
 let nodes = [];
+let inputs;
 
 // Classe que representa um nó no gráfico
 class Node {
@@ -70,32 +67,94 @@ class Node {
   }
 }
 
+class InputsDiv {
+  constructor() {
+    const inputsDiv = select("#inputs");
+
+    const preInputsDiv = createElement("div");
+    preInputsDiv.parent(inputsDiv);
+
+    const numPeopleInput = createInput();
+    numPeopleInput.attribute("type", "number");
+    numPeopleInput.attribute("placeholder", "Quantas pessoas irão comparecer?");
+    numPeopleInput.style("width", "300px");
+    numPeopleInput.parent(preInputsDiv);
+    this.getNumPeople = () => numPeopleInput.value();
+
+    const numChairsInput = createInput();
+    numChairsInput.attribute("type", "number");
+    numChairsInput.attribute("placeholder", "Quantas cadeiras por mesa?");
+    numChairsInput.style("width", "300px");
+    numChairsInput.parent(preInputsDiv);
+    this.getNumChairs = () => numChairsInput.value();
+
+    const generateInputsButton = createButton("Gerar inputs");
+    generateInputsButton.mousePressed(() =>
+      generateInputs(this.getNumPeople()),
+    );
+    generateInputsButton.parent(preInputsDiv);
+
+    const postInputsDiv = createElement("div");
+    postInputsDiv.parent(inputsDiv);
+    postInputsDiv.hide();
+
+    const table = createElement("table");
+    table.parent(postInputsDiv);
+
+    const thead = createElement("thead");
+    thead.parent(table);
+
+    const headerRow = createElement("tr");
+    headerRow.parent(thead);
+
+    const nameHeader = createElement("th", "Nome");
+    nameHeader.parent(headerRow);
+
+    const priorityHeader = createElement("th", "Prioridade");
+    priorityHeader.parent(headerRow);
+
+    const actionsHeader = createElement("th");
+    actionsHeader.parent(headerRow);
+
+    const tbody = createElement("tbody");
+    tbody.parent(table);
+    this.addTableRow = (el) => {
+      el.parent(tbody);
+    };
+    this.getTableRows = () => tbody.elt.children;
+    this.clearTable = () => {
+      tbody.html("");
+    };
+
+    const addInputButton = createButton("+");
+    addInputButton.mousePressed(() => {
+      this.addTableRow(generateInput(tbody));
+    });
+    addInputButton.parent(postInputsDiv);
+
+    const nameButton = createButton("Gerar mapa");
+    nameButton.mousePressed(updateGraph);
+    nameButton.parent(inputsDiv);
+
+    this.showPre = () => {
+      preInputsDiv.style("display", "flex");
+      postInputsDiv.hide();
+    };
+    this.showPost = () => {
+      preInputsDiv.hide();
+      postInputsDiv.style("display", "flex");
+    };
+  }
+}
+
 // Função de configuração inicial do canvas e elementos de entrada
 function setup() {
   createCanvas(800, 800);
-
-  const inputsDiv = select("#inputs");
-
-  const numPeopleInput = createInput();
-  numPeopleInput.attribute("type", "number");
-  numPeopleInput.attribute("placeholder", "Quantas pessoas irão comparecer?");
-  numPeopleInput.style("width", "300px");
-  numPeopleInput.parent(inputsDiv);
-
-  const generateInputsButton = createButton("Gerar inputs");
-  generateInputsButton.mousePressed(() =>
-    generateInputs(numPeopleInput.value()),
-  );
-  generateInputsButton.parent(inputsDiv);
-
-  nameButton = createButton("Gerar mapa");
-  nameButton.mousePressed(updateGraph);
-  nameButton.parent(inputsDiv);
+  inputs = new InputsDiv();
 }
 
-function generateInput(parentEl) {
+function generateInput() {
   const row = createElement("tr");
-  row.parent(parentEl);
 
   const nameCell = createElement("td");
   nameCell.parent(row);
@@ -119,6 +178,8 @@ function generateInput(parentEl) {
   const deleteButton = createButton("x");
   deleteButton.mousePressed(() => row.remove());
   deleteButton.parent(row);
+
+  return row;
 }
 
 // Função para gerar os inputs de nome e prioridade com base no número de pessoas
@@ -129,41 +190,12 @@ function generateInputs(numPeople) {
     return;
   }
 
-  const inputsDiv = select("#inputs");
-  inputsDiv.html("");
-
-  const table = createElement("table");
-  table.parent(inputsDiv);
-
-  const thead = createElement("thead");
-  thead.parent(table);
-
-  const headerRow = createElement("tr");
-  headerRow.parent(thead);
-
-  const nameHeader = createElement("th", "Nome");
-  nameHeader.parent(headerRow);
-
-  const priorityHeader = createElement("th", "Prioridade");
-  priorityHeader.parent(headerRow);
-
-  const actionsHeader = createElement("th");
-  actionsHeader.parent(headerRow);
-
-  const tbody = createElement("tbody");
-  tbody.parent(table);
-
+  inputs.clearTable();
   for (let i = 0; i < numPeopleInt; i++) {
-    generateInput(tbody);
+    const row = generateInput();
+    inputs.addTableRow(row);
   }
-
-  const addInputButton = createButton("+");
-  addInputButton.mousePressed(() => generateInput(tbody));
-  addInputButton.parent(inputsDiv);
-
-  nameButton = createButton("Gerar mapa");
-  nameButton.mousePressed(updateGraph);
-  nameButton.parent(inputsDiv);
+  inputs.showPost();
 }
 
 // Função chamada quando o mouse é pressionado
@@ -244,8 +276,7 @@ function textBox(txt, x, y) {
 // Função para atualizar o gráfico com base nos inputs de nome e prioridade
 function updateGraph() {
   nodes = [];
-  const tbody = select("tbody");
-  const rows = tbody.elt.children;
+  const rows = inputs.getTableRows();
   const peopleByPriority = { 1: [], 2: [], 3: [], 4: [] };
 
   for (let row of rows) {
@@ -259,12 +290,13 @@ function updateGraph() {
     }
   }
 
+  const numChairs = inputs.getNumChairs();
   for (let priority in peopleByPriority) {
     let people = peopleByPriority[priority];
     while (people.length > 0) {
       const data = {
         priority: parseInt(priority),
-        people: people.splice(0, 10),
+        people: people.splice(0, numChairs),
         conn: [],
       };
       let x = random(nodeRadius, width - nodeRadius);
