@@ -230,6 +230,7 @@ function mousePressed() {
 
 // Função chamada quando o mouse é arrastado
 function mouseDragged(mouse) {
+  if (mouse.target.tagName !== "CANVAS") return;
   if (!picked) {
     viewOffset.x += mouse.movementX;
     viewOffset.y += mouse.movementY;
