@@ -85,6 +85,7 @@ function generateInputs(numPeople) {
   inputsDiv.html("");
 
   const numPeopleInt = parseInt(numPeople);
+  // Verifica se o número de pessoas está vazio ou é menor ou igual a 0
   if (isNaN(numPeopleInt) || numPeopleInt <= 0) {
     alert("Por favor, insira um número válido de pessoas.");
     return;
@@ -150,8 +151,24 @@ function mouseDragged() {
   for (let i = 0; i < picked.subNodes.length; i++) {
     const angle = (TWO_PI / picked.subNodes.length) * i;
     const radius = nodeRadius + subNodeRadius + 4;
-    picked.subNodes[i].pos.x = picked.pos.x + cos(angle) * radius;
-    picked.subNodes[i].pos.y = picked.pos.y + sin(angle) * radius;
+    let newX = picked.pos.x + cos(angle) * radius;
+    let newY = picked.pos.y + sin(angle) * radius;
+
+    // Verifica se o subnode está dentro dos limites do canvas
+    if (newX - subNodeRadius < 0) {
+      newX = subNodeRadius;
+    } else if (newX + subNodeRadius > width) {
+      newX = width - subNodeRadius;
+    }
+
+    if (newY - subNodeRadius < 0) {
+      newY = subNodeRadius;
+    } else if (newY + subNodeRadius > height) {
+      newY = height - subNodeRadius;
+    }
+
+    picked.subNodes[i].pos.x = newX;
+    picked.subNodes[i].pos.y = newY;
   }
 }
 
