@@ -3,34 +3,7 @@ let nameInput;
 let nameButton;
 let picked;
 let nodes = [];
-
-class Node {
-  constructor(x, y, data) {
-    this.pos = createVector(x, y);
-    this.data = data;
-  }
-
-  isHover() {
-    return dist(this.pos.x, this.pos.y, mouseX, mouseY) <= nodeRadius;
-  }
-
-  drawBefore() {
-    for (let c of this.data.conn) {
-      line(this.pos.x, this.pos.y, c.pos.x, c.pos.y);
-    }
-  }
-
-  draw() {
-    circle(this.pos.x, this.pos.y, nodeRadius * 2);
-    textAlign(CENTER, CENTER);
-    text(this.data.priority, this.pos.x, this.pos.y);
-  }
-
-  drawAfter() {
-    if (!this.isHover()) return;
-    textBox(this.data.name, mouseX, mouseY);
-  }
-}
+let paths = [];
 
 function setup() {
   createCanvas(500, 500);
@@ -71,9 +44,12 @@ function mouseReleased() {
 
 function draw() {
   background(220);
-  nodes.forEach((n) => n.drawBefore());
-  nodes.forEach((n) => n.draw());
-  nodes.forEach((n) => n.drawAfter());
+  paths.forEach((p) => p.display());
+  for (let node of nodes) {
+    node.display();
+    if (!node.isHover()) continue;
+    textBox(node.hoverText, mouseX, mouseY);
+  }
 }
 
 function textBox(txt, x, y) {
@@ -85,6 +61,7 @@ function textBox(txt, x, y) {
 
 function updateGraph() {
   nodes = [];
+  paths = [];
   const lines = nameInput.value().trim().split("\n");
   for (let line of lines) {
     if (!line) continue;
@@ -96,13 +73,7 @@ function updateGraph() {
     const data = {
       priority: priority,
       name,
-      conn: [],
     };
-    for (let node of nodes) {
-      if (data.priority === node.data.priority) {
-        data.conn.push(node);
-      }
-    }
     let x, y;
     if (data.priority < 3) {
       x = random(width / 2 + nodeRadius, width - nodeRadius);
@@ -111,6 +82,14 @@ function updateGraph() {
     }
     y = random(nodeRadius, height - nodeRadius);
     const newNode = new Node(x, y, data);
+    for (let node of nodes) {
+      if (data.priority === node.data.priority) {
+        const newPath = new Path(node, newNode);
+        paths.push(newPath);
+      }
+    }
+    newNode.displayText = newNode.data.priority;
+    newNode.hoverText = newNode.data.name;
     nodes.push(newNode);
   }
 }
