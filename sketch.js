@@ -293,16 +293,27 @@ function updateGraph() {
   const numChairs = inputs.getNumChairs();
   for (let priority in peopleByPriority) {
     let people = peopleByPriority[priority];
+    let lastTable;
     while (people.length > 0) {
       const data = {
         priority: parseInt(priority),
         people: people.splice(0, numChairs),
         conn: [],
       };
-      let x = random(nodeRadius, width - nodeRadius);
-      let y = random(nodeRadius, height - nodeRadius);
+
+      let x, y;
+      if (!lastTable) {
+        x = random(nodeRadius, width - nodeRadius);
+        y = random(nodeRadius, height - nodeRadius);
+      } else {
+        let angle = random(0, TWO_PI);
+        x = lastTable.pos.x + cos(angle) * 72;
+        y = lastTable.pos.y + sin(angle) * 72;
+      }
+
       const newNode = new Node(x, y, data);
       nodes.push(newNode);
+      lastTable = newNode;
     }
   }
 }
