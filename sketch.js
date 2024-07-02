@@ -80,16 +80,44 @@ function setup() {
   nameButton.parent(inputsDiv);
 }
 
-function generateInputs(numPeople) {
-  const inputsDiv = select("#inputs");
-  inputsDiv.html("");
+function generateInput(parentEl) {
+  const row = createElement("tr");
+  row.parent(parentEl);
 
+  const nameCell = createElement("td");
+  nameCell.parent(row);
+
+  const nameInput = createElement("input");
+  nameInput.attribute("type", "text");
+  nameInput.parent(nameCell);
+
+  const priorityCell = createElement("td");
+  priorityCell.parent(row);
+
+  const priorityInput = createElement("input");
+  priorityInput.attribute("type", "number");
+  priorityInput.attribute("min", "1");
+  priorityInput.attribute("max", "4");
+  priorityInput.parent(priorityCell);
+
+  const actionsCell = createElement("td");
+  actionsCell.parent(row);
+
+  const deleteButton = createButton("x");
+  deleteButton.mousePressed(() => row.remove());
+  deleteButton.parent(row);
+}
+
+function generateInputs(numPeople) {
   const numPeopleInt = parseInt(numPeople);
   // Verifica se o número de pessoas está vazio ou é menor ou igual a 0
   if (isNaN(numPeopleInt) || numPeopleInt <= 0) {
     alert("Por favor, insira um número válido de pessoas.");
     return;
   }
+
+  const inputsDiv = select("#inputs");
+  inputsDiv.html("");
 
   const table = createElement("table");
   table.parent(inputsDiv);
@@ -106,29 +134,19 @@ function generateInputs(numPeople) {
   const priorityHeader = createElement("th", "Prioridade");
   priorityHeader.parent(headerRow);
 
+  const actionsHeader = createElement("th");
+  actionsHeader.parent(headerRow);
+
   const tbody = createElement("tbody");
   tbody.parent(table);
 
   for (let i = 0; i < numPeopleInt; i++) {
-    const row = createElement("tr");
-    row.parent(tbody);
-
-    const nameCell = createElement("td");
-    nameCell.parent(row);
-
-    const nameInput = createElement("input");
-    nameInput.attribute("type", "text");
-    nameInput.parent(nameCell);
-
-    const priorityCell = createElement("td");
-    priorityCell.parent(row);
-
-    const priorityInput = createElement("input");
-    priorityInput.attribute("type", "number");
-    priorityInput.attribute("min", "1");
-    priorityInput.attribute("max", "4");
-    priorityInput.parent(priorityCell);
+    generateInput(tbody);
   }
+
+  const addInputButton = createButton("+");
+  addInputButton.mousePressed(() => generateInput(tbody));
+  addInputButton.parent(inputsDiv);
 
   nameButton = createButton("Gerar mapa");
   nameButton.mousePressed(updateGraph);
@@ -228,7 +246,7 @@ function updateGraph() {
     while (people.length > 0) {
       const data = {
         priority: parseInt(priority),
-        people: people.splice(0, 4),
+        people: people.splice(0, 10),
         conn: [],
       };
       let x = random(nodeRadius, width - nodeRadius);
