@@ -1,29 +1,39 @@
+// Define o raio do nó principal
 const nodeRadius = 16;
+// Define o raio dos subnós
 const subNodeRadius = 8;
+// Variável para armazenar o input de nome
 let nameInput;
+// Variável para armazenar o botão de geração do mapa
 let nameButton;
+// Variável para armazenar o nó selecionado pelo usuário
 let picked;
+// Array para armazenar todos os nós criados
 let nodes = [];
 
+// Classe que representa um nó no gráfico
 class Node {
+  // Construtor da classe Node
   constructor(x, y, data) {
-    this.pos = createVector(x, y);
-    this.data = data;
+    this.pos = createVector(x, y); // Posição do nó principal
+    this.data = data; // Dados associados ao nó
     this.subNodes = this.data.people.map((person, index) => {
-      const angle = (TWO_PI / this.data.people.length) * index;
-      const radius = nodeRadius + subNodeRadius + 4;
+      const angle = (TWO_PI / this.data.people.length) * index; // Ângulo para posicionamento dos subnós
+      const radius = nodeRadius + subNodeRadius + 4; // Raio para posicionamento dos subnós
       const subNodePos = createVector(
         this.pos.x + cos(angle) * radius,
         this.pos.y + sin(angle) * radius,
       );
-      return { pos: subNodePos, name: person };
+      return { pos: subNodePos, name: person }; // Retorna um objeto com a posição e nome do subnó
     });
   }
 
+  // Método para verificar se o mouse está sobre o nó principal
   isHover() {
     return dist(this.pos.x, this.pos.y, mouseX, mouseY) <= nodeRadius;
   }
 
+  // Método para desenhar as linhas antes dos nós e subnós
   drawBefore() {
     for (let subNode of this.subNodes) {
       line(this.pos.x, this.pos.y, subNode.pos.x, subNode.pos.y);
@@ -39,6 +49,7 @@ class Node {
     }
   }
 
+  // Método para desenhar o nó principal e os subnós
   draw() {
     circle(this.pos.x, this.pos.y, nodeRadius * 2);
     textAlign(CENTER, CENTER);
@@ -49,6 +60,7 @@ class Node {
     }
   }
 
+  // Método para desenhar as caixas de texto após os nós e subnós
   drawAfter() {
     for (let subNode of this.subNodes) {
       if (dist(subNode.pos.x, subNode.pos.y, mouseX, mouseY) <= subNodeRadius) {
@@ -58,6 +70,7 @@ class Node {
   }
 }
 
+// Função de configuração inicial do canvas e elementos de entrada
 function setup() {
   createCanvas(800, 800);
 
@@ -66,7 +79,7 @@ function setup() {
   const numPeopleInput = createInput();
   numPeopleInput.attribute("type", "number");
   numPeopleInput.attribute("placeholder", "Quantas pessoas irão comparecer?");
-  numPeopleInput.style("width", "300px"); // Aumenta o tamanho do input
+  numPeopleInput.style("width", "300px");
   numPeopleInput.parent(inputsDiv);
 
   const generateInputsButton = createButton("Gerar inputs");
@@ -80,12 +93,12 @@ function setup() {
   nameButton.parent(inputsDiv);
 }
 
+// Função para gerar os inputs de nome e prioridade com base no número de pessoas
 function generateInputs(numPeople) {
   const inputsDiv = select("#inputs");
   inputsDiv.html("");
 
   const numPeopleInt = parseInt(numPeople);
-  // Verifica se o número de pessoas está vazio ou é menor ou igual a 0
   if (isNaN(numPeopleInt) || numPeopleInt <= 0) {
     alert("Por favor, insira um número válido de pessoas.");
     return;
@@ -135,6 +148,7 @@ function generateInputs(numPeople) {
   nameButton.parent(inputsDiv);
 }
 
+// Função chamada quando o mouse é pressionado
 function mousePressed() {
   for (let node of nodes) {
     if (!node.isHover()) continue;
@@ -143,6 +157,7 @@ function mousePressed() {
   }
 }
 
+// Função chamada quando o mouse é arrastado
 function mouseDragged() {
   if (!picked) return;
   picked.pos.x = constrain(mouseX, nodeRadius, width - nodeRadius);
@@ -154,7 +169,6 @@ function mouseDragged() {
     let newX = picked.pos.x + cos(angle) * radius;
     let newY = picked.pos.y + sin(angle) * radius;
 
-    // Verifica se o subnode está dentro dos limites do canvas
     if (newX - subNodeRadius < 0) {
       newX = subNodeRadius;
     } else if (newX + subNodeRadius > width) {
@@ -172,10 +186,12 @@ function mouseDragged() {
   }
 }
 
+// Função chamada quando o mouse é liberado
 function mouseReleased() {
   picked = null;
 }
 
+// Função principal de desenho do canvas
 function draw() {
   background(220);
   nodes.forEach((n) => n.drawBefore());
@@ -183,6 +199,7 @@ function draw() {
   nodes.forEach((n) => n.drawAfter());
 }
 
+// Função para desenhar uma caixa de texto com o nome do subnó
 function textBox(txt, x, y) {
   textAlign(LEFT, TOP);
   const lines = txt.split("\n");
@@ -206,6 +223,7 @@ function textBox(txt, x, y) {
   }
 }
 
+// Função para atualizar o gráfico com base nos inputs de nome e prioridade
 function updateGraph() {
   nodes = [];
   const tbody = select("tbody");
