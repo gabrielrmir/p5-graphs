@@ -40,6 +40,13 @@ class Node {
     });
   }
 
+  isColliding(node) {
+    return (
+      dist(this.pos.x, this.pos.y, node.pos.x, node.pos.y) <=
+      nodeRadius * 2 + subNodeRadius * 4
+    );
+  }
+
   // Método para verificar se o mouse está sobre o nó principal
   isHover() {
     return (
@@ -321,7 +328,6 @@ function updateGraph() {
   const numChairs = inputs.getNumChairs();
   for (let priority in peopleByPriority) {
     let people = peopleByPriority[priority];
-    let lastNode;
     const priorityNodes = [];
     while (people.length > 0) {
       const data = {
@@ -331,19 +337,30 @@ function updateGraph() {
       };
 
       let x, y;
-      if (!lastNode) {
-        x = random(nodeRadius, width - nodeRadius);
-        y = random(nodeRadius, height - nodeRadius);
-      } else {
-        let angle = random(0, TWO_PI);
-        x = lastNode.pos.x + cos(angle) * 72;
-        y = lastNode.pos.y + sin(angle) * 72;
+      const newNode = new Node(0, 0, data);
+      for (let tries = 20; tries > 0; tries--) {
+        if (priorityNodes.length === 0) {
+          x = random(nodeRadius, width - nodeRadius);
+          y = random(nodeRadius, height - nodeRadius);
+        } else {
+          let angle = random(0, TWO_PI);
+          let rNode = random(priorityNodes);
+          x = rNode.pos.x + cos(angle) * 72;
+          y = rNode.pos.y + sin(angle) * 72;
+        }
+        newNode.pos.x = x;
+        newNode.pos.y = y;
+        let collided = false;
+        for (let n of nodes) {
+          if (!newNode.isColliding(n)) continue;
+          collided = true;
+          break;
+        }
+        if (!collided) break;
       }
 
-      const newNode = new Node(x, y, data);
       nodes.push(newNode);
       priorityNodes.push(newNode);
-      lastNode = newNode;
     }
 
     let minX = nodeRadius;
