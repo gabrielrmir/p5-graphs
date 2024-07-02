@@ -8,6 +8,8 @@ let picked;
 let nodes = [];
 let inputs;
 
+let viewOffset;
+
 // Classe que representa um nó no gráfico
 class Node {
   // Construtor da classe Node
@@ -27,7 +29,9 @@ class Node {
 
   // Método para verificar se o mouse está sobre o nó principal
   isHover() {
-    return dist(this.pos.x, this.pos.y, mouseX, mouseY) <= nodeRadius;
+    return (
+      dist(this.pos.x, this.pos.y, globalMouseX(), globalMouseY()) <= nodeRadius
+    );
   }
 
   // Método para desenhar as linhas antes dos nós e subnós
@@ -48,10 +52,15 @@ class Node {
 
   // Método para desenhar o nó principal e os subnós
   draw() {
+    fill(255);
     circle(this.pos.x, this.pos.y, nodeRadius * 2);
     textAlign(CENTER, CENTER);
+    fill(0);
+    noStroke();
     text(this.data.priority, this.pos.x, this.pos.y);
 
+    stroke(0);
+    fill(255);
     for (let subNode of this.subNodes) {
       circle(subNode.pos.x, subNode.pos.y, subNodeRadius * 2);
     }
@@ -60,8 +69,11 @@ class Node {
   // Método para desenhar as caixas de texto após os nós e subnós
   drawAfter() {
     for (let subNode of this.subNodes) {
-      if (dist(subNode.pos.x, subNode.pos.y, mouseX, mouseY) <= subNodeRadius) {
-        textBox(subNode.name, mouseX, mouseY);
+      if (
+        dist(subNode.pos.x, subNode.pos.y, globalMouseX(), globalMouseY()) <=
+        subNodeRadius
+      ) {
+        textBox(subNode.name, globalMouseX(), globalMouseY());
       }
     }
   }
@@ -147,9 +159,18 @@ class InputsDiv {
   }
 }
 
+function globalMouseX() {
+  return mouseX - viewOffset.x;
+}
+
+function globalMouseY() {
+  return mouseY - viewOffset.y;
+}
+
 // Função de configuração inicial do canvas e elementos de entrada
 function setup() {
   createCanvas(800, 800);
+  viewOffset = createVector(0, 0);
   inputs = new InputsDiv();
 }
 
@@ -208,10 +229,14 @@ function mousePressed() {
 }
 
 // Função chamada quando o mouse é arrastado
-function mouseDragged() {
-  if (!picked) return;
-  picked.pos.x = constrain(mouseX, nodeRadius, width - nodeRadius);
-  picked.pos.y = constrain(mouseY, nodeRadius, height - nodeRadius);
+function mouseDragged(mouse) {
+  if (!picked) {
+    viewOffset.x += mouse.movementX;
+    viewOffset.y += mouse.movementY;
+    return;
+  }
+  picked.pos.x = constrain(globalMouseX(), nodeRadius, width - nodeRadius);
+  picked.pos.y = constrain(globalMouseY(), nodeRadius, height - nodeRadius);
 
   for (let i = 0; i < picked.subNodes.length; i++) {
     const angle = (TWO_PI / picked.subNodes.length) * i;
@@ -243,7 +268,14 @@ function mouseReleased() {
 
 // Função principal de desenho do canvas
 function draw() {
-  background(220);
+  background(210);
+  translate(viewOffset);
+  fill(220);
+  noStroke();
+  rect(0, 0, width, height);
+  fill(255);
+  stroke(0);
+
   nodes.forEach((n) => n.drawBefore());
   nodes.forEach((n) => n.draw());
   nodes.forEach((n) => n.drawAfter());
@@ -267,7 +299,10 @@ function textBox(txt, x, y) {
     boxY = 0;
   }
 
+  fill(255);
   rect(boxX, boxY, boxWidth, boxHeight);
+  fill(0);
+  noStroke();
   for (let i = 0; i < lines.length; i++) {
     text(lines[i], boxX + 8, boxY + 8 + i * textSize());
   }
