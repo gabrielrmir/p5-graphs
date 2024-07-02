@@ -16,12 +16,25 @@ class Node {
   constructor(x, y, data) {
     this.pos = createVector(x, y); // Posição do nó principal
     this.data = data; // Dados associados ao nó
+    this.subNodes = [];
+    this.updateSubNodes();
+  }
+
+  updateSubNodes() {
     this.subNodes = this.data.people.map((person, index) => {
       const angle = (TWO_PI / this.data.people.length) * index; // Ângulo para posicionamento dos subnós
       const radius = nodeRadius + subNodeRadius + 4; // Raio para posicionamento dos subnós
       const subNodePos = createVector(
-        this.pos.x + cos(angle) * radius,
-        this.pos.y + sin(angle) * radius,
+        constrain(
+          this.pos.x + cos(angle) * radius,
+          subNodeRadius,
+          width - subNodeRadius,
+        ),
+        constrain(
+          this.pos.y + sin(angle) * radius,
+          subNodeRadius,
+          height - subNodeRadius,
+        ),
       );
       return { pos: subNodePos, name: person }; // Retorna um objeto com a posição e nome do subnó
     });
@@ -238,28 +251,7 @@ function mouseDragged(mouse) {
   }
   picked.pos.x = constrain(globalMouseX(), nodeRadius, width - nodeRadius);
   picked.pos.y = constrain(globalMouseY(), nodeRadius, height - nodeRadius);
-
-  for (let i = 0; i < picked.subNodes.length; i++) {
-    const angle = (TWO_PI / picked.subNodes.length) * i;
-    const radius = nodeRadius + subNodeRadius + 4;
-    let newX = picked.pos.x + cos(angle) * radius;
-    let newY = picked.pos.y + sin(angle) * radius;
-
-    if (newX - subNodeRadius < 0) {
-      newX = subNodeRadius;
-    } else if (newX + subNodeRadius > width) {
-      newX = width - subNodeRadius;
-    }
-
-    if (newY - subNodeRadius < 0) {
-      newY = subNodeRadius;
-    } else if (newY + subNodeRadius > height) {
-      newY = height - subNodeRadius;
-    }
-
-    picked.subNodes[i].pos.x = newX;
-    picked.subNodes[i].pos.y = newY;
-  }
+  picked.updateSubNodes();
 }
 
 // Função chamada quando o mouse é liberado
@@ -329,7 +321,8 @@ function updateGraph() {
   const numChairs = inputs.getNumChairs();
   for (let priority in peopleByPriority) {
     let people = peopleByPriority[priority];
-    let lastTable;
+    let lastNode;
+    const priorityNodes = [];
     while (people.length > 0) {
       const data = {
         priority: parseInt(priority),
@@ -338,18 +331,37 @@ function updateGraph() {
       };
 
       let x, y;
-      if (!lastTable) {
+      if (!lastNode) {
         x = random(nodeRadius, width - nodeRadius);
         y = random(nodeRadius, height - nodeRadius);
       } else {
         let angle = random(0, TWO_PI);
-        x = lastTable.pos.x + cos(angle) * 72;
-        y = lastTable.pos.y + sin(angle) * 72;
+        x = lastNode.pos.x + cos(angle) * 72;
+        y = lastNode.pos.y + sin(angle) * 72;
       }
 
       const newNode = new Node(x, y, data);
       nodes.push(newNode);
-      lastTable = newNode;
+      priorityNodes.push(newNode);
+      lastNode = newNode;
     }
+
+    let minX = nodeRadius;
+    let minY = nodeRadius;
+    let maxX = width - nodeRadius;
+    let maxY = height - nodeRadius;
+    for (let priorityNode of priorityNodes) {
+      if (priorityNode.pos.x < minX) minX = priorityNode.pos.x;
+      if (priorityNode.pos.y < minY) minY = priorityNode.pos.y;
+      if (priorityNode.pos.x > maxX) maxX = priorityNode.pos.x;
+      if (priorityNode.pos.y > maxY) maxY = priorityNode.pos.y;
+    }
+    priorityNodes.forEach((n) => {
+      n.pos.x -= minX - nodeRadius;
+      n.pos.y -= minY - nodeRadius;
+      n.pos.x -= maxX - (width - nodeRadius);
+      n.pos.y -= maxY - (height - nodeRadius);
+      n.updateSubNodes();
+    });
   }
 }
