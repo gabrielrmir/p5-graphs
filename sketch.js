@@ -61,8 +61,8 @@ function mousePressed() {
 
 function mouseDragged() {
   if (!picked) return;
-  picked.pos.x = mouseX;
-  picked.pos.y = mouseY;
+  picked.pos.x = constrain(mouseX, nodeRadius, width - nodeRadius);
+  picked.pos.y = constrain(mouseY, nodeRadius, height - nodeRadius);
 }
 
 function mouseReleased() {
