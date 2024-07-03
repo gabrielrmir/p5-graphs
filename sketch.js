@@ -20,10 +20,12 @@ class Node {
     this.updateSubNodes();
   }
 
+  // Atualiza as informações dos subnós
   updateSubNodes() {
     this.subNodes = this.data.people.map((person, index) => {
       const angle = (TWO_PI / this.data.people.length) * index; // Ângulo para posicionamento dos subnós
       const radius = nodeRadius + subNodeRadius + 4; // Raio para posicionamento dos subnós
+      // Restringe a posição dos subnós pela área definida pelo canvas
       const subNodePos = createVector(
         constrain(
           this.pos.x + cos(angle) * radius,
@@ -40,6 +42,7 @@ class Node {
     });
   }
 
+  // Verifica colisão com outros nodos
   isColliding(node) {
     return (
       dist(this.pos.x, this.pos.y, node.pos.x, node.pos.y) <=
@@ -99,6 +102,7 @@ class Node {
   }
 }
 
+// Adiciona funcionalidades aos elementos da página
 class InputsDiv {
   constructor() {
     const numPeopleInput = select("#numPeopleInput");
@@ -162,6 +166,7 @@ function draw() {
   nodes.forEach((n) => n.drawAfter());
 }
 
+// Obter posição do mouse com relação a posição do view
 function globalMouseX() {
   return mouseX - viewOffset.x;
 }
@@ -197,6 +202,7 @@ function mouseReleased() {
   picked = null;
 }
 
+// Cria uma nova linha de input
 function generateInput() {
   const row = createElement("tr");
 
@@ -275,6 +281,7 @@ function updateGraph() {
   const rows = inputs.getTableRows();
   const peopleByPriority = { 1: [], 2: [], 3: [], 4: [] };
 
+  // Separa as pessoas em grupos de prioridade
   for (let row of rows) {
     const nameInput = row.children[0].children[0];
     const priorityInput = row.children[1].children[0];
@@ -286,6 +293,8 @@ function updateGraph() {
     }
   }
 
+  // Cria os nós, agrupando-os de acordo
+  // com a prioridade dos convidados
   const numChairs = inputs.getNumChairs();
   for (let priority in peopleByPriority) {
     let people = peopleByPriority[priority];
@@ -297,6 +306,8 @@ function updateGraph() {
         conn: [],
       };
 
+      // Tenta adicionar uma nova mesa sem
+      // sobrepor com as mesas já existentes
       let x, y;
       const newNode = new Node(0, 0, data);
       for (let tries = 20; tries > 0; tries--) {
@@ -324,6 +335,8 @@ function updateGraph() {
       priorityNodes.push(newNode);
     }
 
+    // Move grupos de mesas fora do canvas
+    // para dentro do limite
     let minX = nodeRadius;
     let minY = nodeRadius;
     let maxX = width - nodeRadius;
