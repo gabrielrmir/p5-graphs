@@ -8,8 +8,35 @@
   <body>
     <div class="container">
       <main></main>
-      <div id="inputs"></div>
+      <div id="inputs">
+        <div id="preInputs">
+          <input
+            id="numPeopleInput"
+            type="number"
+            placeholder="Quantas pessoas irão comparecer?"
+          />
+          <input
+            id="numChairsInput"
+            type="number"
+            placeholder="Quantas cadeiras por mesa?"
+          />
+          <button id="inputsButton">Gerar inputs</button>
+        </div>
+        <div id="postInputs" style="display: none">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Prioridade</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button id="addInputButton">+</button>
+        </div>
+        <button id="nameButton">Gerar mapa</button>
+      </div>
     </div>
   </body>
 </html>
-

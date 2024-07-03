@@ -10,6 +10,7 @@ body {
 
 #inputs {
   margin-left: 16px;
+  width: 300px;
   display: flex;
   flex-direction: column;
 }
@@ -22,4 +23,3 @@ body {
 main {
   border: 1px dashed black;
 }
-

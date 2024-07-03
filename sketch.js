@@ -101,82 +101,65 @@ class Node {
 
 class InputsDiv {
   constructor() {
-    const inputsDiv = select("#inputs");
-
-    const preInputsDiv = createElement("div");
-    preInputsDiv.parent(inputsDiv);
-
-    const numPeopleInput = createInput();
-    numPeopleInput.attribute("type", "number");
-    numPeopleInput.attribute("placeholder", "Quantas pessoas irão comparecer?");
-    numPeopleInput.style("width", "300px");
-    numPeopleInput.parent(preInputsDiv);
+    const numPeopleInput = select("#numPeopleInput");
     this.getNumPeople = () => numPeopleInput.value();
 
-    const numChairsInput = createInput();
-    numChairsInput.attribute("type", "number");
-    numChairsInput.attribute("placeholder", "Quantas cadeiras por mesa?");
-    numChairsInput.style("width", "300px");
-    numChairsInput.parent(preInputsDiv);
+    const numChairsInput = select("#numChairsInput");
     this.getNumChairs = () => numChairsInput.value();
 
-    const generateInputsButton = createButton("Gerar inputs");
-    generateInputsButton.mousePressed(() =>
-      generateInputs(this.getNumPeople()),
-    );
-    generateInputsButton.parent(preInputsDiv);
-
-    const postInputsDiv = createElement("div");
-    postInputsDiv.parent(inputsDiv);
-    postInputsDiv.hide();
-
-    const table = createElement("table");
-    table.parent(postInputsDiv);
-
-    const thead = createElement("thead");
-    thead.parent(table);
-
-    const headerRow = createElement("tr");
-    headerRow.parent(thead);
-
-    const nameHeader = createElement("th", "Nome");
-    nameHeader.parent(headerRow);
-
-    const priorityHeader = createElement("th", "Prioridade");
-    priorityHeader.parent(headerRow);
-
-    const actionsHeader = createElement("th");
-    actionsHeader.parent(headerRow);
-
-    const tbody = createElement("tbody");
-    tbody.parent(table);
+    const tbody = select("tbody");
+    this.getTableRows = () => tbody.elt.children;
     this.addTableRow = (el) => {
       el.parent(tbody);
     };
-    this.getTableRows = () => tbody.elt.children;
     this.clearTable = () => {
       tbody.html("");
     };
 
-    const addInputButton = createButton("+");
-    addInputButton.mousePressed(() => {
+    select("#inputsButton").mousePressed(() => {
+      generateInputs(numPeopleInput.value());
+    });
+    select("#nameButton").mousePressed(updateGraph);
+
+    select("#addInputButton").mousePressed(() => {
       this.addTableRow(generateInput(tbody));
     });
-    addInputButton.parent(postInputsDiv);
 
-    const nameButton = createButton("Gerar mapa");
-    nameButton.mousePressed(updateGraph);
-    nameButton.parent(inputsDiv);
+    const preInputsDiv = select("#preInputs");
+    const postInputsDiv = select("#postInputs");
 
     this.showPre = () => {
       preInputsDiv.style("display", "flex");
       postInputsDiv.hide();
     };
+
     this.showPost = () => {
       preInputsDiv.hide();
       postInputsDiv.style("display", "flex");
     };
   }
+}
+
+// Função de configuração inicial do canvas e elementos de entrada
+function setup() {
+  createCanvas(800, 800);
+  viewOffset = createVector(0, 0);
+  inputs = new InputsDiv();
+}
+
+// Função principal de desenho do canvas
+function draw() {
+  background(210);
+  translate(viewOffset);
+  fill(220);
+  noStroke();
+  rect(0, 0, width, height);
+  fill(255);
+  stroke(0);
+
+  nodes.forEach((n) => n.drawBefore());
+  nodes.forEach((n) => n.draw());
+  nodes.forEach((n) => n.drawAfter());
 }
 
 function globalMouseX() {
@@ -187,11 +170,31 @@ function globalMouseY() {
   return mouseY - viewOffset.y;
 }
 
-// Função de configuração inicial do canvas e elementos de entrada
-function setup() {
-  createCanvas(800, 800);
-  viewOffset = createVector(0, 0);
-  inputs = new InputsDiv();
+// Função chamada quando o mouse é pressionado
+function mousePressed() {
+  for (let node of nodes) {
+    if (!node.isHover()) continue;
+    picked = node;
+    break;
+  }
+}
+
+// Função chamada quando o mouse é arrastado
+function mouseDragged(mouse) {
+  if (mouse.target.tagName !== "CANVAS") return;
+  if (!picked) {
+    viewOffset.x += mouse.movementX;
+    viewOffset.y += mouse.movementY;
+    return;
+  }
+  picked.pos.x = constrain(globalMouseX(), nodeRadius, width - nodeRadius);
+  picked.pos.y = constrain(globalMouseY(), nodeRadius, height - nodeRadius);
+  picked.updateSubNodes();
+}
+
+// Função chamada quando o mouse é liberado
+function mouseReleased() {
+  picked = null;
 }
 
 function generateInput() {
@@ -237,48 +240,6 @@ function generateInputs(numPeople) {
     inputs.addTableRow(row);
   }
   inputs.showPost();
-}
-
-// Função chamada quando o mouse é pressionado
-function mousePressed() {
-  for (let node of nodes) {
-    if (!node.isHover()) continue;
-    picked = node;
-    break;
-  }
-}
-
-// Função chamada quando o mouse é arrastado
-function mouseDragged(mouse) {
-  if (mouse.target.tagName !== "CANVAS") return;
-  if (!picked) {
-    viewOffset.x += mouse.movementX;
-    viewOffset.y += mouse.movementY;
-    return;
-  }
-  picked.pos.x = constrain(globalMouseX(), nodeRadius, width - nodeRadius);
-  picked.pos.y = constrain(globalMouseY(), nodeRadius, height - nodeRadius);
-  picked.updateSubNodes();
-}
-
-// Função chamada quando o mouse é liberado
-function mouseReleased() {
-  picked = null;
-}
-
-// Função principal de desenho do canvas
-function draw() {
-  background(210);
-  translate(viewOffset);
-  fill(220);
-  noStroke();
-  rect(0, 0, width, height);
-  fill(255);
-  stroke(0);
-
-  nodes.forEach((n) => n.drawBefore());
-  nodes.forEach((n) => n.draw());
-  nodes.forEach((n) => n.drawAfter());
 }
 
 // Função para desenhar uma caixa de texto com o nome do subnó
